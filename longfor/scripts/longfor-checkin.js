@@ -14,6 +14,13 @@
  * - 添加环境检测功能，提供更好的调试信息
  * - 改进错误处理和重试机制
  * - 优化日志系统，区分不同环境的日志格式
+ * 
+ * v2.0 更新内容（基于Python实现对比）：
+ * - 更新活动号 activity_no 为最新值
+ * - 支持小程序和APP双渠道模式（默认使用小程序模式，与Python版本一致）
+ * - 更新请求头参数：X-LF-DXRisk-Source、X-LF-Bu-Code、X-LF-Channel
+ * - 更新 Accept-Language 为 Python 版本格式
+ * - 优化渠道配置，可通过 CHANNEL_MODE 切换小程序/APP模式
  */
 
 // 配置常量
@@ -34,21 +41,41 @@ const CONFIG = {
     
     // 活动配置（易于更新）
     ACTIVITY: {
-        SIGN_IN_NO: "11111111111736501868255956070000",
+        SIGN_IN_NO: "11111111111686241863606037740000", // 更新为Python版本使用的活动号
         LOTTERY_COMPONENT: "CO15400F29R2ZFJZ",
         LOTTERY_ACTIVITY: "AP25K062Q6YYQ7FX"
     },
     
-    // 通用请求头
+    // 渠道配置（支持小程序和APP两种模式）
+    CHANNEL: {
+        // 小程序渠道（微信小程序，Python版本使用）
+        MINIPROGRAM: {
+            'X-LF-DXRisk-Source': '5',
+            'X-LF-Bu-Code': 'C20400',
+            'X-LF-Channel': 'C2',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Mac MacWechat/WMPF MacWechat/3.8.7(0x13080712) UnifiedPCMacWechat(0xf2641411) XWEB/16990'
+        },
+        // APP渠道（龙湖APP，原JS版本使用）
+        APP: {
+            'X-LF-DXRisk-Source': '2',
+            'X-LF-Bu-Code': 'L00602',
+            'X-LF-Channel': 'L0',
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 &MAIAWebKit_iOS_com.longfor.supera_1.14.0_202506052233_Default_3.2.4.8'
+        }
+    },
+    
+    // 当前使用的渠道模式（'miniprogram' 或 'app'）
+    CHANNEL_MODE: 'miniprogram', // 默认使用小程序模式（与Python版本一致）
+    
+    // 通用请求头（基础头，会根据渠道模式动态调整）
     COMMON_HEADERS: {
         'Accept': 'application/json, text/plain, */*',
         'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'zh-CN,zh-Hans;q=0.9',
+        'Accept-Language': 'zh-CN,zh;q=0.9', // 更新为Python版本格式
         'Content-Type': 'application/json',
         'Sec-Fetch-Dest': 'empty',
         'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-site',
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 &MAIAWebKit_iOS_com.longfor.supera_1.14.0_202506052233_Default_3.2.4.8'
+        'Sec-Fetch-Site': 'same-site'
     }
 }
 
@@ -239,10 +266,20 @@ function done(value = {}) {
     }
 }
 
+// 获取当前渠道配置
+function getChannelConfig() {
+    return CONFIG.CHANNEL[CONFIG.CHANNEL_MODE.toUpperCase()] || CONFIG.CHANNEL.MINIPROGRAM
+}
+
 // 创建请求头
 function createHeaders(token, extraHeaders = {}) {
+    const channelConfig = getChannelConfig()
     return {
         ...CONFIG.COMMON_HEADERS,
+        'User-Agent': channelConfig['User-Agent'], // 根据渠道模式设置User-Agent
+        'X-LF-DXRisk-Source': channelConfig['X-LF-DXRisk-Source'],
+        'X-LF-Bu-Code': channelConfig['X-LF-Bu-Code'],
+        'X-LF-Channel': channelConfig['X-LF-Channel'],
         ...extraHeaders,
         'authtoken': token,
         'X-LF-UserToken': token,
@@ -403,17 +440,21 @@ async function doSignIn() {
     log(`开始执行签到，token: ${sanitizeToken(token)}`)
 
     try {
+        // 根据渠道模式设置不同的DXRisk-Token（如果需要可以后续从配置中读取）
+        const channelConfig = getChannelConfig()
+        const dxRiskToken = CONFIG.CHANNEL_MODE === 'miniprogram' 
+            ? '69241b9d8mO6Xvo671jYFwzDu87Wi49cqnItzOC1' // Python版本使用的token
+            : '68673780TZSEnm6nueRfRAziVGwXc5NyaH5z5vo1' // 原APP版本使用的token
+        
         const headers = createHeaders(token, {
             'Content-Type': 'application/json;charset=UTF-8',
             'Cookie': 'acw_tc=ac11000117515948134458251e007763cde29cc35ff7b19c704ac2843e03fa',
             'Origin': 'https://longzhu.longfor.com',
             'Referer': 'https://longzhu.longfor.com/',
             'X-GAIA-API-KEY': 'c06753f1-3e68-437d-b592-b94656ea5517',
-            'X-LF-Bu-Code': 'L00602',
-            'X-LF-Channel': 'L0',
             'X-LF-DXRisk-Captcha-Token': 'undefined',
-            'X-LF-DXRisk-Source': '2',
-            'X-LF-DXRisk-Token': '68673780TZSEnm6nueRfRAziVGwXc5NyaH5z5vo1'
+            'X-LF-DXRisk-Token': dxRiskToken
+            // X-LF-Bu-Code, X-LF-Channel, X-LF-DXRisk-Source 已在 createHeaders 中根据渠道模式设置
         })
 
         const options = {
