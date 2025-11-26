@@ -57,7 +57,7 @@ Fork from https://github.com/jayyeungchan/Auxiliary
 
 1. **下载模块文件**
    ```
-   https://raw.githubusercontent.com/lonelyman0108/script/refs/heads/master/longfor/surge/longfor-checkin.sgmodule
+   https://raw.githubusercontent.com/yakun0622/script/refs/heads/master/longfor/surge/longfor-checkin.sgmodule
    ```
 
 2. **导入模块** - Surge: 配置 → 模块 → 安装新模块
@@ -67,7 +67,7 @@ Fork from https://github.com/jayyeungchan/Auxiliary
 1. **手动添加脚本配置**
    - 脚本地址：
    ```
-   https://raw.githubusercontent.com/lonelyman0108/script/refs/heads/master/longfor/scripts/longfor-checkin.js
+   https://raw.githubusercontent.com/yakun0622/script/refs/heads/master/longfor/scripts/longfor-checkin.js
    ```
 
 2. **添加MITM配置**
