@@ -41,9 +41,9 @@ const CONFIG = {
     
     // 活动配置（易于更新）
     ACTIVITY: {
-        SIGN_IN_NO: "11111111111686241863606037740000", // 更新为Python版本使用的活动号
-        LOTTERY_COMPONENT: "CO11336N1003YDLZ",
-        LOTTERY_ACTIVITY: "AP25S103D1UP0D95"
+        SIGN_IN_NO: "11111111111736501868255956070000", // 更新为Python版本使用的活动号
+        LOTTERY_COMPONENT: "CC16D30B58Y4B15D",
+        LOTTERY_ACTIVITY: "AP26N042T9O1TTQC"
     },
     
     // 渠道配置（支持小程序和APP两种模式）
